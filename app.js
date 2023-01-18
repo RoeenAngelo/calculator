@@ -1,63 +1,84 @@
 // Global Variables
 
-const firstValueDisplay = document.querySelector('#first-value')
-const secondValueDisplay = document.querySelector('#second-value')
+const currValueDisplay = document.querySelector('#curr-value')
+const prevValueDisplay = document.querySelector('#prev-value')
 const numButtons = document.querySelectorAll('.num-btn');
 const operatorButtons = document.querySelectorAll('.op-btn');
 const clearButton = document.querySelector('#clear');
-const equalButton = document.querySelector('#equal');
+const equalsButton = document.querySelector('#equal');
 const pointButton = document.querySelector('#point');
+const deleteButton = document.querySelector('.del-btn')
+
+// Calculator class
 
 class Calculator {
-    constructor (firstValueDisplay, secondValueDisplay) {
-        this.firstValueDisplay = firstValueDisplay;
-        this.secondValueDisplay = secondValueDisplay;
+    constructor (currValueDisplay, prevValueDisplay) {
+        this.currValueDisplay = currValueDisplay;
+        this.prevValueDisplay = prevValueDisplay;
         this.clear();
     }
     clear() {
-        this.firstValue = '';
-        this.secondValue = '';
+        this.currValue = '';
+        this.prevValue = '';
         this.operator = undefined;
     }
 
     delete() {
-
+        this.currValue = this.currValue.toString().slice(0, -1);
     }
 
     updateDisplay() {
-        this.firstValueDisplay.innerText = this.firstValue;
-        this.secondValueDisplay.innerText = this.secondValue;
-
+        this.currValueDisplay.innerText = this.currValue;
+        this.prevValueDisplay.innerText = this.prevValue;
     }
 
     appendNum(num) {
-        if (num === '.' && this.firstValue.includes('.')) return;
-        this.firstValue = this.firstValue.toString() + num.toString()
+        if (num === '.' && this.currValue.includes('.')) return; // This allows us to input only one "." per value
+        this.currValue = this.currValue.toString() + num.toString(); //Convert this to string for concatenation, and not addition
     }
 
-    operate(n1,operator,n2) {
-        n1 = +(this.firstValue)
-        n2 = +(this.secondValue)
-        operator = this.operator;
-        
+    compute() {
+        let computation;
+        const n2 = +(this.currValue)
+        const n1 = +(this.prevValue)
+
         switch (this.operator) {
             case '+' :
-                 return add(n1,n2)
+                computation = n1 + n2;
+                break;
             case '-' :
-                 return subtract(n1,n2);
+                computation = n1 - n2;
+                break;
             case '/' :
-                return n2 === 0 ? null : divide(n1,n2);
+                computation = n1 / n2;
+                break;
             case '*' :
-                 return multiply(n1,n2);
+                computation = n1 * n2;
+            default:
+                return;
         }
+        this.currValue = computation;
+        this.operator = undefined
+        this.prevValue = ''
+
     }
 
-    chooseOperation() {
+    chooseOperation(operator) {
+        if (this.currValue === '') return; // Prevents from computing and processing the rest of the code below if there are no values present
         
+        if (this.prevValue !== '') {
+            this.compute();
+        } // If both values are present, this allows the compute function to run without have to listen to the equals button
+        
+        this.operator = operator;
+        
+        this.prevValue = this.currValue; // This means we are done typing the curr value
+        
+        this.currValue = ''; // Recycle to input curr value
     }
 }
 
-const calculator = new Calculator(firstValueDisplay, secondValueDisplay);
+const calculator = new Calculator(currValueDisplay, prevValueDisplay);
 
 numButtons.forEach(numBtn => numBtn.addEventListener('click', (e) => {
     calculator.appendNum(e.target.innerText);
@@ -66,36 +87,27 @@ numButtons.forEach(numBtn => numBtn.addEventListener('click', (e) => {
 );
 
 operatorButtons.forEach(opBtn => opBtn.addEventListener('click', (e) => {
+    calculator.chooseOperation(e.target.innerText);
     calculator.updateDisplay();
-    calculator.chooseOperation();
+
 })   
 )
 
 clearButton.addEventListener('click', () => {
         calculator.clear();
         calculator.updateDisplay();
-        firstValueDisplay.innerText = '0'
+        currValueDisplay.innerText = '0'
     })
 
 
-// Operators
+equalsButton.addEventListener('click', () => {
+    calculator.compute();
+    calculator.updateDisplay();
+})
 
-function add(n1,n2) {
-    return n1 + n2;
-}
-
-function subtract(n1,n2) {
-    return n1 - n2;
-}
-
-function divide(n1,n2) {
-    return n1 / n2;
-}
-
-function multiply(n1,n2) {
-    return n1 * n2;
-}
-
-
+deleteButton.addEventListener('click', () => {
+    calculator.delete();
+    calculator.updateDisplay();
+})
 
 
